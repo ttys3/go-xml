@@ -4,6 +4,12 @@ golang xml package which add marshal self-closing tag support
 
 the code applied from https://go-review.googlesource.com/c/go/+/469495
 
+## Oops
+
+I found this https://twitter.com/ZeCoffee/status/766349635359211520
+
+![José Coelho @ZeCoffee golang encoding/xml works fine until you need a self-closing tag...](https://user-images.githubusercontent.com/41882455/245492933-32b95e6d-e409-4e33-9f9b-1ec61258c617.png)
+
 ## usage
 
 self-closing tag example:
