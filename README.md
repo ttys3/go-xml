@@ -12,6 +12,8 @@ I found this https://twitter.com/ZeCoffee/status/766349635359211520
 
 ## usage
 
+Custom MarshalXML ref [https://pkg.go.dev/encoding/xml#Marshal](https://pkg.go.dev/encoding/xml#example-package-CustomMarshalXML)
+
 self-closing tag example:
 
 ```go
