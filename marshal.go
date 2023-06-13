@@ -760,6 +760,9 @@ func (p *printer) writeStart(name Name, attr []Attr, close bool) error {
 	}
 
 	p.WriteByte('>')
+	if close {
+		p.writeIndent(-1)
+	}
 	return nil
 }
 
