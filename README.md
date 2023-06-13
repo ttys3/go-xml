@@ -9,6 +9,8 @@ the code applied from https://go-review.googlesource.com/c/go/+/469495
 self-closing tag example:
 
 ```go
+import "github.com/ttys3/go-xml"
+
 type Foo struct {
 	Bar     string
 	Comment string
