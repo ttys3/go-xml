@@ -1,35 +1,28 @@
-# go-xml
+package xml
 
-golang xml package which add marshal self-closing tag support
+import "testing"
 
-the code applied from https://go-review.googlesource.com/c/go/+/469495
-
-## usage
-
-self-closing tag example:
-
-```go
 type Foo struct {
 	Bar     string
 	Comment string
 }
 
 // Custom XML marshaler for Foo
-func (i Foo) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	attrs := []xml.Attr{
+func (i Foo) MarshalXML(e *Encoder, start StartElement) error {
+	attrs := []Attr{
 		{
-			Name:  xml.Name{Local: "bar"},
+			Name:  Name{Local: "bar"},
 			Value: i.Bar,
 		},
 		{
-			Name:  xml.Name{Local: "comment"},
+			Name:  Name{Local: "comment"},
 			Value: i.Comment,
 		},
 	}
 
 	// Create a self-closing tag for Item
-	empty := xml.EmptyElement{
-		Name: xml.Name{
+	empty := EmptyElement{
+		Name: Name{
 			Space: "",
 			Local: "foo",
 		},
@@ -58,7 +51,7 @@ func TestSelfClodingTagFoo(t *testing.T) {
 		Comment: "world",
 	}
 
-	marshaledXML, err := xml.MarshalIndent(foo, "", "  ")
+	marshaledXML, err := MarshalIndent(foo, "", "  ")
 	if err != nil {
 		t.Fatalf("Failed to marshal XML: %v", err)
 	}
@@ -67,15 +60,3 @@ func TestSelfClodingTagFoo(t *testing.T) {
 		t.Errorf("Expected marshaled XML:\n%s\n\nGot:\n%s", expectedXML, marshaledXML)
 	}
 }
-```
-
-
-## related issues
-
-see https://github.com/golang/go/issues/21399
-
-https://go-review.googlesource.com/c/go/+/469495
-
-https://go-review.googlesource.com/c/go/+/59830
-
-https://github.com/nemith/netconf/pull/27/files
