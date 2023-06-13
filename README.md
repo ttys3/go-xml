@@ -17,6 +17,8 @@ self-closing tag example:
 ```go
 import "github.com/ttys3/go-xml"
 
+// no `xml` struct tag is needed or can be used here
+// since we handle all this in `MarshalXML`
 type Foo struct {
 	Bar     string
 	Comment string
