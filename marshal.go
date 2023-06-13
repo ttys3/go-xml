@@ -212,11 +212,15 @@ func (enc *Encoder) EncodeToken(t Token) error {
 	p := &enc.p
 	switch t := t.(type) {
 	case StartElement:
-		if err := p.writeStart(&t); err != nil {
+		if err := p.writeStart(t.Name, t.Attr, false); err != nil {
 			return err
 		}
 	case EndElement:
 		if err := p.writeEnd(t.Name); err != nil {
+			return err
+		}
+	case EmptyElement:
+		if err := p.writeStart(t.Name, t.Attr, true); err != nil {
 			return err
 		}
 	case CharData:
@@ -548,7 +552,7 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo, startTemplat
 		len(p.tags) != 0 && p.tags[len(p.tags)-1].Space != "" {
 		start.Attr = append(start.Attr, Attr{Name{"", xmlnsPrefix}, ""})
 	}
-	if err := p.writeStart(&start); err != nil {
+	if err := p.writeStart(start.Name, start.Attr, false); err != nil {
 		return err
 	}
 
@@ -703,7 +707,7 @@ func (p *printer) marshalInterface(val Marshaler, start StartElement) error {
 
 // marshalTextInterface marshals a TextMarshaler interface value.
 func (p *printer) marshalTextInterface(val encoding.TextMarshaler, start StartElement) error {
-	if err := p.writeStart(&start); err != nil {
+	if err := p.writeStart(start.Name, start.Attr, false); err != nil {
 		return err
 	}
 	text, err := val.MarshalText()
@@ -715,40 +719,46 @@ func (p *printer) marshalTextInterface(val encoding.TextMarshaler, start StartEl
 }
 
 // writeStart writes the given start element.
-func (p *printer) writeStart(start *StartElement) error {
-	if start.Name.Local == "" {
+func (p *printer) writeStart(name Name, attr []Attr, close bool) error {
+	if name.Local == "" {
 		return fmt.Errorf("xml: start tag with no name")
 	}
 
-	p.tags = append(p.tags, start.Name)
-	p.markPrefix()
+	if !close {
+		p.tags = append(p.tags, name)
+		p.markPrefix()
+	}
 
 	p.writeIndent(1)
 	p.WriteByte('<')
-	p.WriteString(start.Name.Local)
+	p.WriteString(name.Local)
 
-	if start.Name.Space != "" {
+	if name.Space != "" {
 		p.WriteString(` xmlns="`)
-		p.EscapeString(start.Name.Space)
+		p.EscapeString(name.Space)
 		p.WriteByte('"')
 	}
 
 	// Attributes
-	for _, attr := range start.Attr {
-		name := attr.Name
-		if name.Local == "" {
+	for _, attr := range attr {
+		if attr.Name.Local == "" {
 			continue
 		}
 		p.WriteByte(' ')
-		if name.Space != "" {
-			p.WriteString(p.createAttrPrefix(name.Space))
+		if attr.Name.Space != "" {
+			p.WriteString(p.createAttrPrefix(attr.Name.Space))
 			p.WriteByte(':')
 		}
-		p.WriteString(name.Local)
+		p.WriteString(attr.Name.Local)
 		p.WriteString(`="`)
 		p.EscapeString(attr.Value)
 		p.WriteByte('"')
 	}
+
+	if close {
+		p.WriteByte('/')
+	}
+
 	p.WriteByte('>')
 	return nil
 }
@@ -1097,7 +1107,7 @@ func (s *parentStack) trim(parents []string) error {
 // push adds parent elements to the stack and writes open tags.
 func (s *parentStack) push(parents []string) error {
 	for i := 0; i < len(parents); i++ {
-		if err := s.p.writeStart(&StartElement{Name: Name{Local: parents[i]}}); err != nil {
+		if err := s.p.writeStart(Name{Local: parents[i]}, nil, false); err != nil {
 			return err
 		}
 	}

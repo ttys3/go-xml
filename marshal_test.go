@@ -1984,6 +1984,12 @@ var encodeTokenTests = []struct {
 	},
 	err: "xml: end tag with no name",
 }, {
+	desc: "empty element",
+	toks: []Token{
+		EmptyElement{Name{"", "foo"}, nil},
+	},
+	want: `<foo/>`,
+}, {
 	desc: "char data",
 	toks: []Token{
 		CharData("foo"),

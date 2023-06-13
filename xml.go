@@ -51,7 +51,7 @@ type Attr struct {
 // StartElement, EndElement, CharData, Comment, ProcInst, or Directive.
 type Token any
 
-// A StartElement represents an XML start element.
+// StartElement represents an XML start element.
 type StartElement struct {
 	Name Name
 	Attr []Attr
@@ -70,12 +70,27 @@ func (e StartElement) End() EndElement {
 	return EndElement{e.Name}
 }
 
-// An EndElement represents an XML end element.
+// EndElement represents an XML end element.
 type EndElement struct {
 	Name Name
 }
 
-// A CharData represents XML character data (raw text),
+// EmptyElement repsents a self-closing element (i.e <my-element/>).  This
+// element type is only used during encoding and emited while decoding.
+type EmptyElement struct {
+	Name Name
+	Attr []Attr
+}
+
+// Copy creates a new copy of EmptyElement.
+func (e EmptyElement) Copy() EmptyElement {
+	attrs := make([]Attr, len(e.Attr))
+	copy(attrs, e.Attr)
+	e.Attr = attrs
+	return e
+}
+
+// CharData represents XML character data (raw text),
 // in which XML escape sequences have been replaced by
 // the characters they represent.
 type CharData []byte
@@ -83,14 +98,14 @@ type CharData []byte
 // Copy creates a new copy of CharData.
 func (c CharData) Copy() CharData { return CharData(bytes.Clone(c)) }
 
-// A Comment represents an XML comment of the form <!--comment-->.
+// Comment represents an XML comment of the form <!--comment-->.
 // The bytes do not include the <!-- and --> comment markers.
 type Comment []byte
 
 // Copy creates a new copy of Comment.
 func (c Comment) Copy() Comment { return Comment(bytes.Clone(c)) }
 
-// A ProcInst represents an XML processing instruction of the form <?target inst?>
+// ProcInst represents an XML processing instruction of the form <?target inst?>
 type ProcInst struct {
 	Target string
 	Inst   []byte
@@ -102,7 +117,7 @@ func (p ProcInst) Copy() ProcInst {
 	return p
 }
 
-// A Directive represents an XML directive of the form <!text>.
+// Directive represents an XML directive of the form <!text>.
 // The bytes do not include the <! and > markers.
 type Directive []byte
 
